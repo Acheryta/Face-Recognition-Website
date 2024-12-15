@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Liveness
+{% endblock %}
+
+{% block main %}
+<body>
+    <h2>Liveness Detection</h2>
+    
+    <!-- Form upload kéo thả -->
+    <form id="imageForm" enctype="multipart/form-data">
+        <div 
+            id="imageDropArea" 
+            style="border: 2px dashed #007bff; height: 300px; width: 50%; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center;"
+            ondrop="dropImage(event)" 
+            ondragover="allowDrop(event)"
+            ondragenter="dragEnter(event)" 
+            ondragleave="dragLeave(event)">
+            <div style="font-size: 40px; color: #007bff;"><i class="fa-solid fa-upload"></i></div>
+            <h3>Drag & Drop your image here</h3>
+            <p style="font-size: 20px; font-weight: 500; color: #007bff;">OR</p>
+            <label for="image" style="background-color: #007bff; color: #fff; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Choose File</label>
+            <input type="file" id="image" name="image" accept=".jpg, .jpeg, .png" style="display: none;" required onchange="previewImage(event)">
+        </div>
+        <button type="submit" style="margin-top: 20px; padding: 10px 20px; background-color: #007bff; color: white; border-radius: 5px;">Check Liveness</button>
+    </form>
+
+    <!-- Kết quả hiển thị -->
+    <div id="result" style="margin-top: 20px;">
+        <h3>Result:</h3>
+        <img id="resultImage" style="max-width: 500px; display: none;" alt="Processed Image">
+    </div>
+
+    <script>
+        // Cho phép kéo thả vào khu vực
+        function allowDrop(event) {
+            event.preventDefault();  // Ngừng hành động mặc định để có thể thả file
+        }
+
+        // Xử lý khi kéo file vào khu vực (thay đổi màu nền)
+        function dragEnter(event) {
+            event.preventDefault();
+            const dropArea = document.getElementById("imageDropArea");
+            dropArea.style.backgroundColor = '#e0e0e0';
+
+        }
+
+        // Xử lý khi file rời khỏi khu vực (trở lại màu nền ban đầu)
+        function dragLeave(event) {
+            const dropArea = document.getElementById("imageDropArea");
+            dropArea.style.backgroundColor = "";  // Màu nền ban đầu
+        }
+
+        // Xử lý thả ảnh vào khu vực
+        function dropImage(event) {
+            event.preventDefault();  // Ngừng hành động mặc định
+            const file = event.dataTransfer.files[0];
+            const inputElement = document.getElementById('image');
+            inputElement.files = event.dataTransfer.files;  // Gán file cho input file
+            previewImage({target: inputElement});  // Hiển thị ảnh ngay khi thả
+        }
+
+        // Hiển thị ảnh xem trước khi tải lên
+        function previewImage(event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById("resultImage");
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = "block";  // Hiển thị ảnh
+                };
+                reader.readAsDataURL(file);  // Đọc file và hiển thị ảnh
+            }
+        }
+
+        // Gửi ảnh khi nhấn nút "Check Liveness"
+        document.getElementById('imageForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData();
+            const imageFile = document.getElementById('image').files[0];
+            formData.append('image', imageFile);
+
+            fetch('/liveness', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.blob())
+            .then(imageBlob => {
+                const resultImage = document.getElementById('resultImage');
+                const imageUrl = URL.createObjectURL(imageBlob);
+                resultImage.src = imageUrl;
+                resultImage.style.display = 'block';  // Hiển thị ảnh kết quả
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred during the process.');
+            });
+        });
+    </script>
+</body>
+{% endblock %}

@@ -1,0 +1,11 @@
+Flask>=2.0.0
+Werkzeug>=2.0.0
+flask-session>=0.4.0
+cs50>=3.0.1
+face-recognition>=1.3.0
+Pillow>=8.0.0
+numpy>=1.19.0
+opencv-python>=4.5.0
+faiss-cpu>=1.7.0
+watchdog>=2.1.0
+deepface>=0.0.79

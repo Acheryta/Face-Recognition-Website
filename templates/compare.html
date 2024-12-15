@@ -1,0 +1,143 @@
+{% extends "layout.html" %}
+
+{% block title %}
+compare
+{% endblock %}
+
+{% block main %}
+<body>
+    <h1>Compare Two Images</h1>
+    <form style="display:flex; align-items:center; justify-content:center;" id="compareForm" enctype="multipart/form-data">
+        <!-- Chọn ảnh thứ nhất -->
+        <div style="margin-right:10px; border: 2px dashed #007bff; height: 500px; width: 500px; border-radius: 6px; display:flex; align-items:center; justify-content:center; flex-direction: column;" 
+            id="image1DropArea" 
+            ondrop="dropImage(event, 'image1')" 
+            ondragover="allowDrop(event)" 
+            ondragenter="dragEnter(event, 'image1')" 
+            ondragleave="dragLeave(event, 'image1')">
+            <div style="font-size: 50px; color: #007bff;"><i class="fa-solid fa-upload"></i></div>
+            <header style="font-size: 30px; font-weight: 500;">Drag & Drop to Upload</header>
+            <span style="font-size: 25px; font-weight: 500; color: #007bff;">OR</span>
+            <input style="margin-left:100px; display: none;" type="file" id="image1" name="image1" accept="image/*" required onchange="previewImage(event, 'preview1')">
+            <!-- Nút "Choose File" để chọn ảnh thủ công -->
+            <label for="image1" 
+            style="cursor: pointer; 
+                    color: #fff; 
+                    background-color: #007bff; 
+                    padding: 10px 20px; 
+                    border-radius: 8px; 
+                    margin-top: 10px;"
+            >Choose File</label>
+            <label style="font-size: 30px; font-weight:500;" for="image1">Image 1</label>
+            <img id="preview1" src="" alt="Preview Image 1" style=" max-width: 250px; max-height:150px; display: none;"><br><br>
+        </div>
+
+        <!-- Chọn ảnh thứ hai -->
+        <div style="margin-left:10px; border: 2px dashed #007bff; height: 500px; width: 500px; border-radius: 6px; display:flex; align-items:center; justify-content:center; flex-direction: column;" 
+            id="image2DropArea" 
+            ondrop="dropImage(event, 'image2')" 
+            ondragover="allowDrop(event)" 
+            ondragenter="dragEnter(event, 'image2')" 
+            ondragleave="dragLeave(event, 'image2')">
+            <div style="font-size: 50px; color: #007bff;"><i class="fa-solid fa-upload"></i></div>
+            <header style="font-size: 30px; font-weight: 500;">Drag & Drop to Upload</header>
+            <span style="font-size: 25px; font-weight: 500; color: #007bff;">OR</span>
+            <input style="margin-left:100px; display: none;" type="file" id="image2" name="image2" accept="image/*" required onchange="previewImage(event, 'preview2')">
+            <!-- Nút "Choose File" để chọn ảnh thủ công -->
+            <label for="image2" 
+            style="cursor: pointer; 
+                    color: #fff; 
+                    background-color: #007bff; 
+                    padding: 10px 20px; 
+                    border-radius: 8px; 
+                    margin-top: 10px;"
+            >Choose File</label>
+            <label style="font-size: 30px; font-weight:500;" for="image2">Image 2</label>
+            <img id="preview2" src="" alt="Preview Image 2" style="max-width: 250px; max-height:150px; display: none;"><br><br>
+        </div>
+        
+    </form>
+    <!-- Nút so sánh -->
+    <button style="align-content: center; 
+                border-radius: 100px; 
+                margin-top: 20px;"
+                class="btn btn-primary"  
+                type="button"  onclick="compareImages()">Compare</button>
+    <h3 id="result"></h3>
+
+    <script>
+        // Hàm hiển thị ảnh xem trước
+        function previewImage(event, previewId) {
+            const file = event.target.files[0];
+            const preview = document.getElementById(previewId);
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = "block";
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Hàm cho phép kéo thả vào khu vực
+        function allowDrop(event) {
+            event.preventDefault(); // Ngừng sự kiện mặc định để có thể thả file
+        }
+
+        // Hàm xử lý khi kéo vào khu vực (thay đổi màu nền)
+        function dragEnter(event, inputId) {
+            event.preventDefault();
+            const dropArea = document.getElementById(inputId + "DropArea");
+            dropArea.style.backgroundColor = '#e0e0e0';
+        }
+
+        // Hàm xử lý khi kéo ra khỏi khu vực (trở lại màu nền ban đầu)
+        function dragLeave(event, inputId) {
+            const dropArea = document.getElementById(inputId + "DropArea");
+            dropArea.style.backgroundColor = "";  // Màu nền ban đầu
+        }
+
+        // Hàm xử lý thả ảnh vào khu vực
+        function dropImage(event, inputId) {
+            event.preventDefault(); // Ngừng sự kiện mặc định
+            const file = event.dataTransfer.files[0];
+            const inputElement = document.getElementById(inputId);
+            const textElement = document.getElementById(inputId + "Text");
+            const previewElement = document.getElementById("preview" + inputId.charAt(inputId.length - 1));
+
+            // Hiển thị file đã thả
+            if (file) {
+                inputElement.files = event.dataTransfer.files; // Gán file cho input file
+                previewImage({target: inputElement}, 'preview' + inputId.charAt(inputId.length - 1)); // Xử lý xem trước ảnh
+                textElement.style.display = "none"; // Ẩn thông báo kéo thả
+            }
+
+            // Trở lại màu nền ban đầu sau khi thả ảnh
+            const dropArea = document.getElementById(inputId + "DropArea");
+            dropArea.style.backgroundColor = "#f0f0f0";  // Màu nền ban đầu
+            dropArea.style.borderColor = "#fff";  // Màu viền ban đầu
+        }
+
+        // Hàm gửi yêu cầu so sánh ảnh đến server
+        async function compareImages() {
+            const formData = new FormData(document.getElementById("compareForm"));
+
+            const response = await fetch("/compare", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                document.getElementById("result").innerText = "Error: " + data.error;
+            } else {
+                document.getElementById("result").innerText = "Similarity: " + data.similarity + "%";
+            }
+        }
+    </script>
+</body>
+</html>
+{% endblock %}

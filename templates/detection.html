@@ -1,0 +1,143 @@
+{% extends "layout.html" %}
+
+{% block title %}
+detection
+{% endblock %}
+
+{% block main %}
+<body>
+    <h1>Face Detection</h1>
+    <div style="display: flex; gap: 30px; align-items: center; justify-content: center; margin-top: 20px;">
+        <!-- Vùng kéo & thả ảnh -->
+        <form 
+            id="detectionForm" 
+            enctype="multipart/form-data"
+            style="border: 2px dashed #007bff; 
+                height: 300px; 
+                width: 400px; 
+                border-radius: 6px; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                flex-direction: column;
+                position: relative;"
+        >
+            <!-- Biểu tượng và hướng dẫn -->
+            <div style="font-size: 50px; color: #007bff;"><i class="fa-solid fa-upload"></i></div>
+            <header style="font-size: 30px; font-weight: 500;">Drag & Drop to Upload</header>
+            <span style="font-size: 25px; font-weight: 500; color: #007bff;">OR</span>
+
+            <!-- Input file ẩn để chọn ảnh -->
+            <input 
+                type="file" 
+                id="image" 
+                name="image" 
+                accept="image/*" 
+                required 
+                style="display: none;"
+            >
+
+            <!-- Nút "Choose File" để chọn ảnh thủ công -->
+            <label for="image" 
+                style="cursor: pointer; 
+                        color: #fff; 
+                        background-color: #007bff; 
+                        padding: 10px 20px; 
+                        border-radius: 8px; 
+                        margin-top: 10px;"
+            >Choose File</label>
+        </form>
+
+        <!-- Hiển thị ảnh đã tải lên -->
+        <div style="text-align: center;">
+            <h3 style="margin-bottom: 10px;">Uploaded Image</h3>
+            <img id="uploadedImage" src="" alt="Uploaded Image" 
+                style="max-width: 300px; max-height: 300px; display: none; border: 2px solid #ccc; border-radius: 6px;">
+        </div>
+        
+    </div>
+    <!-- Nút phát hiện khuôn mặt -->
+    <button 
+        style="align-content: center; 
+               border-radius: 100px; 
+               margin-top: 20px;"
+        class="btn btn-primary"  
+        type="button" 
+        onclick="detectFaces()"
+    >Detect Faces</button>
+
+    <!-- Hiển thị kết quả -->
+    <h3>Result:</h3>
+    <img id="resultImage" src="" alt="Detection Result" style="max-width: 500px; display: none;">
+
+    <!-- Script xử lý kéo thả, hiển thị ảnh và gửi ảnh -->
+    <script>
+        const form = document.getElementById('detectionForm');
+        const input = document.getElementById('image');
+        const uploadedImage = document.getElementById('uploadedImage');
+
+        // Ngăn chặn hành vi mặc định của trình duyệt khi kéo thả
+        form.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            form.style.backgroundColor = '#e0e0e0'; // Đổi màu khi kéo thả vào
+        });
+
+        form.addEventListener('dragleave', () => {
+            form.style.backgroundColor = ''; // Reset màu khi rời khỏi
+        });
+
+        // Xử lý khi thả file vào vùng kéo thả
+        form.addEventListener('drop', (e) => {
+            e.preventDefault();
+            form.style.backgroundColor = ''; // Reset màu
+
+            // Lấy file từ sự kiện kéo thả
+            const files = e.dataTransfer.files;
+
+            if (files.length > 0) {
+                input.files = files;
+                displayImage(files[0]); // Hiển thị ảnh
+            }
+        });
+
+        // Xử lý khi người dùng chọn file thủ công
+        input.addEventListener('change', () => {
+            if (input.files.length > 0) {
+                displayImage(input.files[0]); // Hiển thị ảnh
+            }
+        });
+
+        // Hiển thị ảnh tải lên
+        function displayImage(file) {
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                uploadedImage.src = e.target.result; // Gán URL ảnh vào thẻ img
+                uploadedImage.style.display = 'block'; // Hiển thị thẻ img
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        // Hàm gửi ảnh để phát hiện khuôn mặt
+        async function detectFaces() {
+            const formData = new FormData();
+            formData.append("image", input.files[0]); // Lấy file từ input
+
+            const response = await fetch("/detect", {
+                method: "POST",
+                body: formData
+            });
+
+            // Hiển thị kết quả trả về
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const resultImage = document.getElementById("resultImage");
+
+            resultImage.src = url;
+            resultImage.style.display = "block";
+        }
+    </script>
+</body>
+</html>
+{% endblock %}

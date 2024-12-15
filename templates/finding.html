@@ -1,0 +1,109 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Finding
+{% endblock %}
+
+{% block main %}
+<body>
+    <h2>Find Similar Faces</h2>
+    <div style="display: flex; gap: 30px; align-items: center; justify-content: center; margin-top: 20px;">
+        <form style="display: flex; align-items: center; justify-content: center;" id="findingForm" action="/finding" method="POST" enctype="multipart/form-data">
+            <!-- Kéo thả và chọn ảnh -->
+            <div style="border: 2px dashed #007bff; height: 400px; width: 400px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-direction: column;" 
+                id="imageDropArea" ondrop="dropImage(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
+                <div style="font-size: 50px; color: #007bff;"><i class="fa-solid fa-upload"></i></div>
+                <header style="font-size: 30px; font-weight: 500;">Drag & Drop to Upload</header>
+                <span style="font-size: 25px; font-weight: 500; color: #007bff;">OR</span>
+                <input style="display: none;" type="file" id="image" name="image" accept=".jpg, .jpeg, .png" required onchange="previewImage(event)">
+                <!-- Nút "Choose File" để chọn ảnh thủ công -->
+                <label for="image" 
+                    style="cursor: pointer; 
+                        color: #fff; 
+                        background-color: #007bff; 
+                        padding: 10px 20px; 
+                        border-radius: 8px; 
+                        margin-top: 10px;">
+                    Choose File
+                </label>
+            </div>
+            <!-- Nút tìm kiếm -->
+            <button style="width:100px; margin:10px 10px 10px 10px; align-content: center; border-radius: 100px;" class="btn btn-primary" type="submit">Find</button>
+        </form>
+        <div style="text-align: center;">
+            <h3 style="margin-bottom: 10px;">Uploaded Image</h3>
+            <img id="previewImage" src="{{ image_url }}" alt="Preview Image" style="max-width: 250px; max-height: 150px;">
+        </div>
+    </div>
+
+    {% if result %}
+        <h3>Similar Faces Found:</h3>
+        {% if result == "No similar faces found." %}
+            <p>No similar faces found.</p>
+        {% else %}
+            <div class="gallery" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 5px;">
+                {% for face in result %}
+                    <div class="image-container" style="width: calc(20% - 10px); text-align: center;">
+                        <img style="width:200px; border: 1px solid #ccc; border-radius: 5px;" src="{{ face.image_url }}" alt="Face">
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endif %}
+    
+    <script>
+        // Hàm cho phép kéo thả vào khu vực
+        function allowDrop(event) {
+            event.preventDefault(); // Ngừng sự kiện mặc định để có thể thả file
+        }
+
+        // Hàm xử lý khi kéo vào khu vực (thay đổi màu nền)
+        function dragEnter(event) {
+            event.preventDefault();
+            const dropArea = document.getElementById("imageDropArea");
+            dropArea.style.backgroundColor = '#e0e0e0';
+        }
+
+        // Hàm xử lý khi kéo ra khỏi khu vực (trở lại màu nền ban đầu)
+        function dragLeave(event) {
+            const dropArea = document.getElementById("imageDropArea");
+            dropArea.style.backgroundColor = "";  // Màu nền ban đầu
+
+        }
+
+        // Hàm xử lý thả ảnh vào khu vực
+        function dropImage(event) {
+            event.preventDefault(); // Ngừng sự kiện mặc định
+            const file = event.dataTransfer.files[0];
+            const inputElement = document.querySelector("input[type='file']");
+            const previewElement = document.getElementById("previewImage");
+
+            // Hiển thị file đã thả
+            if (file) {
+                inputElement.files = event.dataTransfer.files; // Gán file cho input file
+                previewImage({target: inputElement});
+            }
+
+            // Trở lại màu nền ban đầu sau khi thả ảnh
+            const dropArea = document.getElementById("imageDropArea");
+            dropArea.style.backgroundColor = "#f0f0f0";  // Màu nền ban đầu
+            dropArea.style.borderColor = "#fff";  // Màu viền ban đầu
+        }
+
+        // Hàm hiển thị ảnh xem trước
+        function previewImage(event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById("previewImage");
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = "block";
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</body>
+{% endblock %}
