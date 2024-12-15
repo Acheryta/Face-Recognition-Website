@@ -13,4 +13,4 @@ Hướng dẫn sử dụng : có thể dùng cửa sổ cmd hoặc trình biên 
 py application.py hoặc
 py application.py > output.log 2>&1 (nếu cần xuất file log)
 
-lưu ý: nên chạy với quyền admin nếu cần thiết
+lưu ý: nên chạy với quyền admin nếu cần thiết. Tạo folder static/face và static/face/unknown
